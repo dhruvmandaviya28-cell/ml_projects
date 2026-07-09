@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineMatch — Movie Recommendation System</title>
+  <meta name="description" content="Discover your next favourite film with AI-powered content-based and mood-based movie recommendations powered by MovieLens data." />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="app-background"></div>
+
+  <!-- ── Header ── -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-icon">🎬</span>
+        <div>
+          <h1>CineMatch</h1>
+          <p>AI-powered movie discovery</p>
+        </div>
+      </div>
+      <nav class="nav-tabs" role="tablist" aria-label="Recommendation mode">
+        <button class="nav-tab active" data-tab="home"    role="tab" id="tab-home"    aria-selected="true"  aria-controls="home-section">Discover</button>
+        <button class="nav-tab"        data-tab="similar" role="tab" id="tab-similar" aria-selected="false" aria-controls="similar-section">Find Similar</button>
+        <button class="nav-tab"        data-tab="mood"    role="tab" id="tab-mood"    aria-selected="false" aria-controls="mood-section">Mood Picks</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ── Home / Discover ── -->
+    <section id="home-section" class="panel active" aria-labelledby="tab-home">
+
+      <!-- Stats bar -->
+      <div class="stats-bar" id="stats-bar">
+        <div class="stat-item">
+          <span class="stat-value" id="stat-movies">—</span>
+          <span class="stat-label">Movies</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-ratings">—</span>
+          <span class="stat-label">Ratings</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-users">—</span>
+          <span class="stat-label">Users</span>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero">
+        <h2 class="hero-title">What will you <span class="gradient-text">watch tonight?</span></h2>
+        <p class="hero-subtitle">Powered by MovieLens · Content-Based &amp; Mood-Based Filtering</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary hero-btn" id="hero-similar-btn">🔍 Find Similar Movies</button>
+          <button class="btn btn-secondary hero-btn" id="hero-mood-btn">✨ Browse by Mood</button>
+        </div>
+      </div>
+
+      <!-- Trending section -->
+      <div class="trending-header">
+        <h3 class="section-label">🔥 Trending &amp; Top Rated</h3>
+        <p class="section-sub">Highest-rated titles from our catalogue</p>
+      </div>
+
+      <div id="trending-loading" class="loading-state" aria-live="polite">
+        <div class="spinner"></div>
+        <p>Loading trending movies…</p>
+      </div>
+
+      <div id="trending-error" class="error-banner hidden" role="alert"></div>
+
+      <div id="trending-grid" class="movie-grid hidden"></div>
+    </section>
+
+    <!-- ── Similar movies ── -->
+    <section id="similar-section" class="panel" aria-labelledby="tab-similar">
+      <div class="panel-header">
+        <h2 id="similar-heading">Find Similar Movies</h2>
+        <p>Enter a movie you love and we'll suggest titles with matching genres.</p>
+      </div>
+
+      <form id="similar-form" class="search-form" autocomplete="off" novalidate>
+        <div class="search-wrapper">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="text"
+            id="movie-search"
+            placeholder="e.g. Toy Story (1995)"
+            aria-label="Movie title"
+            aria-autocomplete="list"
+            aria-controls="search-suggestions"
+            aria-expanded="false"
+            role="combobox"
+          />
+          <ul id="search-suggestions" class="suggestions hidden" role="listbox" aria-label="Movie suggestions"></ul>
+        </div>
+        <button type="submit" class="btn btn-primary" id="similar-submit-btn">
+          <span>Get Recommendations</span>
+        </button>
+      </form>
+
+      <div id="similar-loading" class="loading-state hidden" aria-live="polite">
+        <div class="spinner"></div>
+        <p>Finding similar movies…</p>
+      </div>
+
+      <div id="similar-error" class="error-banner hidden" role="alert"></div>
+
+      <div id="similar-results" class="results-section hidden">
+        <div class="results-header">
+          <h3 class="results-title">
+            Recommendations for <span id="similar-query"></span>
+          </h3>
+          <span class="results-count" id="similar-count"></span>
+        </div>
+        <div id="similar-grid" class="movie-grid"></div>
+      </div>
+    </section>
+
+    <!-- ── Mood-based ── -->
+    <section id="mood-section" class="panel" aria-labelledby="tab-mood">
+      <div class="panel-header mood-header">
+        <h2 id="mood-heading">How are you feeling today?</h2>
+        <p>Select one or more moods — we'll curate the perfect watchlist for you.</p>
+      </div>
+
+      <div id="recent-moods" class="recent-moods hidden">
+        <span class="recent-label">Recent:</span>
+        <div id="recent-moods-list" class="recent-moods-list"></div>
+      </div>
+
+      <div id="mood-grid" class="mood-grid" role="group" aria-label="Mood options"></div>
+
+      <div class="mood-actions">
+        <button id="surprise-btn" class="btn btn-secondary" type="button">
+          🎲 Surprise Me
+        </button>
+        <button id="mood-submit-btn" class="btn btn-primary" type="button" disabled>
+          <span>Get Mood Picks</span>
+        </button>
+      </div>
+
+      <div id="mood-loading" class="loading-state hidden" aria-live="polite">
+        <div class="spinner"></div>
+        <p>Curating movies for your mood…</p>
+      </div>
+
+      <div id="mood-error" class="error-banner hidden" role="alert"></div>
+
+      <div id="mood-results" class="results-section hidden">
+        <div class="results-header">
+          <h3 class="results-title" id="mood-results-title"></h3>
+          <span class="results-count" id="mood-count"></span>
+        </div>
+        <div id="mood-grid-results" class="movie-grid"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="footer-brand">🎬 CineMatch</p>
+      <p>Built with MovieLens · Content-Based &amp; Mood-Based Filtering · &copy; 2026</p>
+    </div>
+  </footer>
+
+  <!-- Scroll-to-top -->
+  <button class="scroll-top hidden" id="scroll-top-btn" aria-label="Back to top" title="Back to top">↑</button>
+
+  <!-- Movie detail modal -->
+  <div class="modal-overlay hidden" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card" id="modal-card">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/js/app.js" type="module"></script>
+</body>
+</html>
